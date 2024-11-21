@@ -217,7 +217,38 @@ def print_employee_dataframe():
     df = pd.read_sql("SELECT * FROM EMPLOYEE ORDER BY EMPLOYEEID DESC", con=db_connection)
     print(df)
 
+
+def add_legacy_employees(csv_file_path):
+    """
+    Reads a CSV file and inserts its data into the EMPLOYEE table in the database.
+    """
+    # Connect to the database
+    connection = sqlite3.connect('utsc-exercise.db')
+    cursor = connection.cursor()
+
+    # Load the CSV file into a pandas DataFrame
+    legacy_employees = pd.read_csv(csv_file_path)
+
+    # Insert each row into the EMPLOYEE table
+    for _, row in legacy_employees.iterrows():
+        cursor.execute('''
+            INSERT OR IGNORE INTO EMPLOYEE (EmployeeId, FirstName, LastName, JobTitle, OfficeId)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (row['EmployeeId'], row['FirstName'], row['LastName'], row['JobTitle'], row['OfficeId']))
+
+    # Commit the transaction and close the connection
+    connection.commit()
+    connection.close()
+    print("Legacy employees have been added to the database.")
+
+
+# Call the function with the file path
+if __name__ == "__main__":
+    csv_file_path = r"C:\Users\Admin\utsc-exercise\src\db\legacy_employees.csv"  # Use raw string to handle Windows paths
+    add_legacy_employees(csv_file_path)
 if __name__ == '__main__':
     #TODO: UNCOMMENT THIS TO INGEST THE DATA ONCE YOU HAVE COMPLETED THE FUNCTION ABOVE
     # ingest_csv_data("legacy_employees.csv")
     print_employee_dataframe()
+
+
